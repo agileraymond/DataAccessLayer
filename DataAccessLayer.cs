@@ -19,34 +19,33 @@ namespace KeonaDataLayer
         {
             var results = new List<Person>();
 
-            using (var connection = new SqlConnection(_connectionString))
-            using (var command = new SqlCommand("procName", connection) { 
-                    CommandType = CommandType.StoredProcedure }) 
+            try 
             {
-                connection.Open();
-                command.Parameters.Add(new SqlParameter("orderDate", orderDate));
-
-                var reader = command.ExecuteReader();
-                while (reader.Read())
+                using (var connection = new SqlConnection(_connectionString))
+                using (var command = new SqlCommand("dbo.p_get_people_with_orders", connection) { 
+                        CommandType = CommandType.StoredProcedure }) 
                 {
-                    results.Add(new Person {
-                        PersonId = int.Parse(reader["personId"].ToString()),
-                        NameFirst = reader["nameFirst"].ToString(),
-                        NameLast = reader["nameLast"].ToString()
-                    });
+                    connection.Open();
+                    command.Parameters.Add(new SqlParameter("OrderDate", orderDate));
+
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        results.Add(new Person {
+                            PersonId = int.Parse(reader["PersonId"].ToString()),
+                            NameFirst = reader["NameFirst"].ToString(),
+                            NameLast = reader["NameLast"].ToString()
+                        });
+                    }
                 }
+            }
+            catch(Exception ex)
+            {
+                // TODO: log exception here, this will help us fix or troubleshoot issues 
+                throw new Exception("Unable to retrieve data.");    
             }
 
             return results;
         }
     }
 }
-
-/*
-using (var conn = new SqlConnection(connectionString))
-using (var command = new SqlCommand("ProcedureName", conn) { 
-                           CommandType = CommandType.StoredProcedure }) {
-   conn.Open();
-   command.ExecuteNonQuery();
-}
-*/
